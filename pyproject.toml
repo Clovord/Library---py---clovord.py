@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "Official Python library for the Clovord platform."
 readme = "README.md"
 license = "MIT"
+license-files = ["LICENSE"]
 requires-python = ">=3.10"
 authors = [
   { name = "Clovord" }
@@ -38,6 +39,7 @@ dev = [
 [project.urls]
 Homepage = "https://clovord.com"
 Documentation = "https://clovord.com/developers/docs"
+Repository = "https://github.com/clovord/clovord"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/clovord"]
