@@ -38,7 +38,7 @@ async def on_ready_payload(data):
     print("READY PAYLOAD:")
     print(json.dumps(data, indent=2, ensure_ascii=False))
 
-bot.run("YourBotToken")
+bot.run("YourBotToken") 
 ```
 
 ## Overview
