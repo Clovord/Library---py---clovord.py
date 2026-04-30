@@ -1,0 +1,51 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "clovord"
+version = "0.1.0"
+description = "Official Python library for the Clovord platform."
+readme = "README.md"
+license = "MIT"
+requires-python = ">=3.10"
+authors = [
+  { name = "Clovord" }
+]
+keywords = ["clovord", "api", "sdk"]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Developers",
+  "License :: OSI Approved :: MIT License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Software Development :: Libraries",
+  "Typing :: Typed"
+]
+dependencies = [
+  "aiohttp>=3.9.0"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.0.0",
+  "build>=1.2.2",
+  "twine>=5.1.0"
+]
+
+[project.urls]
+Homepage = "https://clovord.com"
+Documentation = "https://clovord.com/developers/docs"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/clovord"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+
+[tool.hatch.build]
+include = [
+  "src/clovord/py.typed"
+]

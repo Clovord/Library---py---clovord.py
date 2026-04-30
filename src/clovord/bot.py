@@ -1,0 +1,105 @@
+from __future__ import annotations
+
+import asyncio
+import inspect
+from collections.abc import Awaitable, Callable
+from typing import Any
+
+from .errors import ClovordInvalidTokenError
+from .events import EventManager
+from .gateway import GatewayClient
+from .http import HTTPClient
+from .intents import Intents
+from .models.message import Message
+from .utils.logger import get_logger
+
+
+EventCallback = Callable[..., Awaitable[None]]
+
+
+class Bot:
+    """Main SDK entrypoint for gateway and API interactions."""
+
+    def __init__(self, *, intents: Intents | int | None = None) -> None:
+        self.events = EventManager()
+        self.http = HTTPClient()
+        self.gateway = GatewayClient(self)
+        self._logger = get_logger()
+        self._token: str | None = None
+        self._is_running = False
+        self._intents = Intents.none()
+        self.set_intents(Intents.none() if intents is None else intents)
+
+    @property
+    def intents(self) -> Intents:
+        return self._intents
+
+    @intents.setter
+    def intents(self, intents: Intents | int) -> None:
+        self.set_intents(intents)
+
+    def set_intents(self, intents: Intents | int) -> None:
+        if isinstance(intents, Intents):
+            self._intents = intents
+            return
+
+        if isinstance(intents, int):
+            self._intents = Intents(intents)
+            return
+
+        raise TypeError("intents must be an Intents instance or integer bitmask")
+
+    def event(self, callback: EventCallback) -> EventCallback:
+        if not inspect.iscoroutinefunction(callback):
+            raise TypeError("Event callback must be an async function")
+
+        self.events.register(callback.__name__, callback)
+        return callback
+
+    async def start(self, token: str) -> None:
+        token = token.strip()
+        if not token:
+            raise ClovordInvalidTokenError("Token cannot be empty")
+
+        self._token = token
+        await self.http.start(token)
+        self._is_running = True
+
+        try:
+            await self.gateway.connect(token)
+        finally:
+            self._is_running = False
+            await self.http.close()
+
+    def run(self, token: str) -> asyncio.Task[None] | None:
+        """Start the bot and manage the event loop automatically."""
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            asyncio.run(self.start(token))
+            return None
+
+        return loop.create_task(self.start(token))
+
+    async def close(self) -> None:
+        await self.gateway.close()
+        await self.http.close()
+        self._is_running = False
+
+    async def _handle_gateway_event(self, event_name: str, data: Any) -> None:
+        handler_name = f"on_{event_name.lower()}"
+
+        if event_name == "READY":
+            try:
+                await self.gateway.update_presence("online")
+            except Exception as exc:
+                self._logger.warning("Failed to set online presence: %s", exc)
+            await self.events.dispatch("on_ready")
+            await self.events.dispatch("on_ready_payload", data)
+            return
+
+        if event_name == "MESSAGE_CREATE" and isinstance(data, dict):
+            await self.events.dispatch("on_message", Message.from_dict(data))
+            return
+
+        await self.events.dispatch(handler_name, data)
