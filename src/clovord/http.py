@@ -10,7 +10,7 @@ from .errors import ClovordHTTPError, ClovordInvalidTokenError
 class HTTPClient:
     """Minimal async REST client for Clovord API."""
 
-    BASE_URL = "https://api.clovord.com"
+    BASE_URL = "https://clovord.com/api/v1"
 
     def __init__(self) -> None:
         self._session: aiohttp.ClientSession | None = None
