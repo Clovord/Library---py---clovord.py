@@ -1,0 +1,42 @@
+name: Changelog
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version, e.g. 0.1.5"
+        required: true
+      since_tag:
+        description: "Optional tag to start from, e.g. v0.1.4"
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  update-changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Update changelog
+        run: |
+          if [ -n "${{ github.event.inputs.since_tag }}" ]; then
+            python tools/update_changelog.py --version "${{ github.event.inputs.version }}" --since-tag "${{ github.event.inputs.since_tag }}"
+          else
+            python tools/update_changelog.py --version "${{ github.event.inputs.version }}"
+          fi
+
+      - name: Commit changelog
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add CHANGELOG.md
+          git commit -m "docs(changelog): update for v${{ github.event.inputs.version }}" || echo "No changes"
+          git push

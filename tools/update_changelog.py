@@ -1,0 +1,124 @@
+from __future__ import annotations
+
+import argparse
+import datetime as dt
+import re
+import subprocess
+from pathlib import Path
+
+HEADER = "# Changelog\n\nAll notable changes to this project will be documented in this file.\n\nThe format is based on Keep a Changelog, and this project follows Semantic Versioning.\n\n"
+
+SECTIONS = {
+    "Added": ("feat",),
+    "Fixed": ("fix",),
+    "Changed": ("refactor", "perf", "chore"),
+    "Docs": ("docs",),
+    "Tests": ("test",),
+}
+
+CONVENTIONAL_RE = re.compile(r"^(?P<type>[a-z]+)(\([^)]+\))?(!)?:\s*(?P<desc>.+)$", re.IGNORECASE)
+
+
+def run_git(args: list[str]) -> str:
+    result = subprocess.run(["git", *args], check=True, text=True, capture_output=True)
+    return result.stdout.strip()
+
+
+def latest_tag() -> str | None:
+    try:
+        tags = run_git(["tag", "--sort=-v:refname"]).splitlines()
+    except subprocess.CalledProcessError:
+        return None
+    return tags[0] if tags else None
+
+
+def commits_since(tag: str | None) -> list[str]:
+    revision_range = "HEAD" if not tag else f"{tag}..HEAD"
+    try:
+        output = run_git(["log", revision_range, "--pretty=%s"])
+    except subprocess.CalledProcessError:
+        return []
+    return [line.strip() for line in output.splitlines() if line.strip()]
+
+
+def categorize(commits: list[str]) -> dict[str, list[str]]:
+    categorized: dict[str, list[str]] = {section: [] for section in SECTIONS}
+    categorized["Other"] = []
+
+    for subject in commits:
+        m = CONVENTIONAL_RE.match(subject)
+        if not m:
+            categorized["Other"].append(subject)
+            continue
+
+        ctype = m.group("type").lower()
+        desc = m.group("desc").strip()
+
+        placed = False
+        for section, prefixes in SECTIONS.items():
+            if ctype in prefixes:
+                categorized[section].append(desc)
+                placed = True
+                break
+
+        if not placed:
+            categorized["Other"].append(desc)
+
+    return {k: v for k, v in categorized.items() if v}
+
+
+def build_entry(version: str, categorized: dict[str, list[str]]) -> str:
+    date_str = dt.date.today().isoformat()
+    lines = [f"## [{version}] - {date_str}"]
+
+    for section in ("Added", "Fixed", "Changed", "Docs", "Tests", "Other"):
+        items = categorized.get(section)
+        if not items:
+            continue
+        lines.append(f"### {section}")
+        for item in items:
+            lines.append(f"- {item}")
+        lines.append("")
+
+    return "\n".join(lines).rstrip() + "\n\n"
+
+
+def main() -> int:
+    parser = argparse.ArgumentParser(description="Update CHANGELOG.md from conventional commit messages.")
+    parser.add_argument("--version", required=True, help="Release version, e.g. 0.1.5")
+    parser.add_argument("--since-tag", default=None, help="Optional starting tag, e.g. v0.1.4")
+    args = parser.parse_args()
+
+    changelog = Path("CHANGELOG.md")
+    existing = changelog.read_text(encoding="utf-8") if changelog.exists() else HEADER
+
+    tag = args.since_tag if args.since_tag is not None else latest_tag()
+    commits = commits_since(tag)
+    if not commits:
+        print("No commits found to add to changelog.")
+        return 0
+
+    categorized = categorize(commits)
+    entry = build_entry(args.version, categorized)
+
+    version_header = f"## [{args.version}]"
+    if version_header in existing:
+        print(f"Version {args.version} already exists in CHANGELOG.md")
+        return 0
+
+    if existing.startswith("# Changelog"):
+        first_section = existing.find("## [")
+        if first_section == -1:
+            new_content = HEADER + entry
+        else:
+            new_content = existing[:first_section] + entry + existing[first_section:]
+    else:
+        new_content = HEADER + entry + existing
+
+    changelog.write_text(new_content, encoding="utf-8")
+    print(f"Updated CHANGELOG.md for version {args.version}")
+    return 0
+
+
+if __name__ == "__main__":
+    raise SystemExit(main())
