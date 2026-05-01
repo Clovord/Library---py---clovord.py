@@ -7,10 +7,10 @@ from typing import Any
 
 from .errors import ClovordInvalidTokenError
 from .events import EventManager
-from .gateway import GatewayClient
+from .gateway.events.dispatcher import dispatch_gateway_event
+from .gateway.handler import GatewayClient
 from .http import HTTPClient
 from .intents import Intents
-from .models.message import Message
 from .utils.logger import get_logger
 
 
@@ -87,19 +87,4 @@ class Bot:
         self._is_running = False
 
     async def _handle_gateway_event(self, event_name: str, data: Any) -> None:
-        handler_name = f"on_{event_name.lower()}"
-
-        if event_name == "READY":
-            try:
-                await self.gateway.update_presence("online")
-            except Exception as exc:
-                self._logger.warning("Failed to set online presence: %s", exc)
-            await self.events.dispatch("on_ready")
-            await self.events.dispatch("on_ready_payload", data)
-            return
-
-        if event_name == "MESSAGE_CREATE" and isinstance(data, dict):
-            await self.events.dispatch("on_message", Message.from_dict(data))
-            return
-
-        await self.events.dispatch(handler_name, data)
+        await dispatch_gateway_event(self, event_name, data)

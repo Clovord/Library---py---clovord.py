@@ -6,16 +6,15 @@ import json
 from typing import TYPE_CHECKING, Any
 
 import aiohttp
-
-from .errors import (
+from ..errors import (
     ClovordError,
     ClovordGatewayDisconnectedError,
     ClovordInvalidTokenError,
 )
-from .utils.logger import get_logger
+from ..utils.logger import get_logger
 
 if TYPE_CHECKING:
-    from .bot import Bot
+    from ..bot import Bot
 
 
 # Clovord gateway opcodes
@@ -151,6 +150,7 @@ class GatewayClient:
         if op == GATEWAY_OP_DISPATCH and isinstance(event_name, str):
             if "ERROR" in event_name or self._looks_like_gateway_error_payload(data):
                 raise self._build_gateway_error_from_payload(payload)
+
             await self._bot._handle_gateway_event(event_name, data)
             return
 
