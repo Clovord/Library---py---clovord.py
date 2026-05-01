@@ -3,7 +3,7 @@ requires = ["hatchling>=1.27.0"]
 build-backend = "hatchling.build"
 
 [project]
-name = "clovord"
+name = "clovord.py"
 version = "0.1.8"
 description = "Official Python library for the Clovord platform."
 readme = "README.md"
@@ -41,15 +41,10 @@ dev = [
 [project.urls]
 Homepage = "https://clovord.com"
 Documentation = "https://clovord.com/developers/docs"
-Repository = "https://github.com/Clovord/Clovord---PyLibrary"
+Repository = "https://github.com/Clovord/Library---py---clovord.py"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/clovord"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-
-[tool.hatch.build]
-include = [
-  "src/clovord/py.typed"
-]
