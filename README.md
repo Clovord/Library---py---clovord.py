@@ -49,14 +49,14 @@ bot.run("YourBotToken")
 
 <!-- latest-release-notes:start -->
 ## Latest Release Notes
-Version: `0.1.10dev7`
-Last commit: `fix: update version to 0.1.10dev7 and improve presence update handling`
+Version: `0.1.10dev8`
+Last commit: `fix: correct type casting for extracted user identity in handle function`
 
 ### Fixed
-- update version to 0.1.10dev7 and improve presence update handling
+- correct type casting for extracted user identity in handle function
 
 ### Docs
-- update for v0.1.10dev6
+- update for v0.1.10dev7
 
 See full history in CHANGELOG.md.
 <!-- latest-release-notes:end -->
