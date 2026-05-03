@@ -8,8 +8,8 @@ if TYPE_CHECKING:
 GATEWAY_EVENT_NAME = "READY"
 INTERNAL_EVENT_NAME = "on_ready"
 
-async def handle(bot: Bot, data_full: dict = None, data_part: dict = None) -> None:
-    username, user_id = dict(_extract_ready_identity(data_full))
+async def handle(bot: Bot, data_full: dict | None = None, data_part: dict | None = None) -> None:
+    username, user_id = _extract_ready_identity(data_part)
     bot._logger.info("Connected to gateway as %s (%s)", username, user_id)
 
     try:

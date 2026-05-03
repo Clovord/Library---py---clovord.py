@@ -10,6 +10,5 @@ if TYPE_CHECKING:
 GATEWAY_EVENT_NAME = "MESSAGE_CREATE"
 INTERNAL_EVENT_NAME = "on_message_create"
 
-async def handle(bot: Bot, data_full: dict = None, data_part: dict = None) -> None:
-
+async def handle(bot: Bot, data_full: dict | None = None, data_part: dict | None = None) -> None:
     await bot.events.dispatch(INTERNAL_EVENT_NAME, data_part)

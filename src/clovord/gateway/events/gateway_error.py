@@ -17,16 +17,19 @@ GATEWAY_EVENT_NAME = "GATEWAY_ERROR"
 INTERNAL_EVENT_NAME = "on_gateway_error"
 
 
-async def handle(bot: Bot, data_full: dict = None, data_part: dict = None) -> None:
-    event = data_full.get("d",).get("request").get("event", "UNKNOWN_EVENT")
+async def handle(bot: Bot, data_full: dict | None = None, data_part: dict | None = None) -> None:
+    payload = data_part if isinstance(data_part, dict) else {}
+    request = payload.get("request") if isinstance(payload.get("request"), dict) else {}
+    status = payload.get("status") if isinstance(payload.get("status"), dict) else {}
 
-    code = data_full.get("d",).get("request").get("code", "UNKNOWN_CODE")
-    message = data_full.get("d",).get("request").get("message", "UNKNOWN_MESSAGE")
+    event = request.get("event", "UNKNOWN_EVENT")
+    code = status.get("code", "UNKNOWN_CODE")
+    message = status.get("code_message", "UNKNOWN_MESSAGE")
 
 
     logger.error(f"The gateway encountered an error for event '{event}' with code '{code}' and message '{message}'")
     logger.error("It is advised to build an handler for this event to log the error details and take appropriate action.")
 
 
-    await bot.events.dispatch(INTERNAL_EVENT_NAME, data_part)
+    await bot.events.dispatch(INTERNAL_EVENT_NAME, payload)
     

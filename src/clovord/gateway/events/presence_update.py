@@ -49,14 +49,11 @@ def _build_presence_states(data: dict[str, Any]) -> tuple[dict[str, Any], dict[s
 
     return before, after
 
-async def handle(bot: Bot, data_full: dict[str, Any], data_part: dict[str, Any] | None = None) -> None:
-    payload = data_part
-    if payload is None and isinstance(data_full, dict):
-        payload = data_full.get("d")
-    if not isinstance(payload, dict):
+async def handle(bot: Bot, data_full: dict[str, Any] | None = None, data_part: dict[str, Any] | None = None) -> None:
+    if not isinstance(data_part, dict):
         raise TypeError("PRESENCE_UPDATE payload must be a dict")
 
-    before_state, after_state = _build_presence_states(payload)
+    before_state, after_state = _build_presence_states(data_part)
     await bot.events.dispatch(
         INTERNAL_EVENT_NAME,
         _to_object(before_state),
