@@ -10,11 +10,10 @@ GATEWAY_EVENT_NAME = "PRESENCE_UPDATE"
 INTERNAL_EVENT_NAME = "on_presence_update"
 
 
-def _normalize_user(user_data: Any) -> dict[str, Any] | None:
-    if not isinstance(user_data, dict):
-        return None
-
+def _normalize_user(user_data: dict[str, Any]) -> dict[str, Any]:
     normalized = dict(user_data)
+    username = normalized.get("username") or normalized.get("name") or "unknown"
+    normalized["username"] = username
     if "name" not in normalized and "username" in normalized:
         normalized["name"] = normalized.get("username")
     return normalized
@@ -28,32 +27,36 @@ def _to_object(value: Any) -> Any:
     return value
 
 
-def _build_presence_states(data: dict[str, Any]) -> tuple[dict[str, Any] | None, dict[str, Any] | None]:
-    user_data = _normalize_user(data.get("user"))
-    presence_data = data.get("presence") if isinstance(data.get("presence"), dict) else {}
+def _build_presence_states(data: dict[str, Any]) -> tuple[dict[str, Any], dict[str, Any]]:
+    user_data = _normalize_user(data.get("user") or {})
+    presence_data = data.get("presence") or {}
 
-    before = presence_data.get("before") if isinstance(presence_data.get("before"), dict) else None
-    after = presence_data.get("after") if isinstance(presence_data.get("after"), dict) else None
+    before = dict(presence_data.get("before") or {})
+    after = dict(presence_data.get("after") or {})
 
     # Backward compatibility: older payloads may only provide presence status directly.
-    if after is None and presence_data:
+    if not after and presence_data:
         if "status" in presence_data or "custom_status" in presence_data:
             after = {
                 "status": presence_data.get("status"),
                 "custom_status": presence_data.get("custom_status"),
             }
 
-    if user_data is not None:
-        if isinstance(before, dict) and "user" not in before:
-            before = {**before, "user": user_data}
-        if isinstance(after, dict) and "user" not in after:
-            after = {**after, "user": user_data}
+    if "user" not in before:
+        before["user"] = user_data
+    if "user" not in after:
+        after["user"] = user_data
 
     return before, after
 
-async def handle(bot: Bot, data_full: dict = None, data_part: dict = None) -> None:
+async def handle(bot: Bot, data_full: dict[str, Any], data_part: dict[str, Any] | None = None) -> None:
+    payload = data_part
+    if payload is None and isinstance(data_full, dict):
+        payload = data_full.get("d")
+    if not isinstance(payload, dict):
+        raise TypeError("PRESENCE_UPDATE payload must be a dict")
 
-    before_state, after_state = _build_presence_states(data_full)
+    before_state, after_state = _build_presence_states(payload)
     await bot.events.dispatch(
         INTERNAL_EVENT_NAME,
         _to_object(before_state),

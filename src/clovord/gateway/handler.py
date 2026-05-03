@@ -130,8 +130,10 @@ class GatewayClient:
     async def _handle_payload(self, payload: dict[str, Any]) -> None:
         op = payload.get("op")
         event_name = payload.get("t")
-        data_part = payload.get("d")
-        data_full = payload
+        data_part_raw = payload.get("d")
+        data_part = data_part_raw if isinstance(data_part_raw, dict) else {"value": data_part_raw}
+        data_full = dict(payload)
+        data_full["d"] = data_part
         seq = payload.get("s")
 
         if isinstance(seq, int):
