@@ -56,6 +56,6 @@ async def handle(bot: Bot, data_full: dict = None, data_part: dict = None) -> No
     before_state, after_state = _build_presence_states(data_full)
     await bot.events.dispatch(
         INTERNAL_EVENT_NAME,
-        before=_to_object(before_state),
-        after=_to_object(after_state),
+        _to_object(before_state),
+        _to_object(after_state),
     )
