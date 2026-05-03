@@ -7,8 +7,8 @@ from ...models.message import Message
 if TYPE_CHECKING:
     from ...bot import Bot
 
-GATEWAY_EVENT_NAME = "MESSAGE_CREATE"
-INTERNAL_EVENT_NAME = "on_message_create"
+GATEWAY_EVENT_NAME = "PRESENCE_UPDATE"
+INTERNAL_EVENT_NAME = "on_presence_update"
 
 async def handle(bot: Bot, data: Any) -> None:
     if isinstance(data, dict):
