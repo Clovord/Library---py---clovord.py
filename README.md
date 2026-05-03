@@ -49,14 +49,14 @@ bot.run("YourBotToken")
 
 <!-- latest-release-notes:start -->
 ## Latest Release Notes
-Version: `0.1.10dev2`
-Last commit: `feat: Added presence_update event handling`
+Version: `0.1.10dev6`
+Last commit: `fix: Fixed an issue with the Changelog generation from github`
 
 ### Added
-- Added presence_update event handling
+- add support for switching to default branch before committing changelog updates
 
 ### Fixed
-- use constant for internal event name in message_create handler feat: add presence_update event
+- Fixed an issue with the Changelog generation from github
 
 See full history in CHANGELOG.md.
 <!-- latest-release-notes:end -->
