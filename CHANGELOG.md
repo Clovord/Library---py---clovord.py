@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.1.10dev9] - 2026-05-03
+### Changed
+- update handle function signatures and improve payload handling across gateway events
+
+### Docs
+- update for v0.1.10dev8
+
 ## [0.1.10dev8] - 2026-05-03
 ### Fixed
 - correct type casting for extracted user identity in handle function

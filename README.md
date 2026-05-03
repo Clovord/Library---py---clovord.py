@@ -49,14 +49,14 @@ bot.run("YourBotToken")
 
 <!-- latest-release-notes:start -->
 ## Latest Release Notes
-Version: `0.1.10dev8`
-Last commit: `fix: correct type casting for extracted user identity in handle function`
+Version: `0.1.10dev9`
+Last commit: `refactor: update handle function signatures and improve payload handling across gateway events`
 
-### Fixed
-- correct type casting for extracted user identity in handle function
+### Changed
+- update handle function signatures and improve payload handling across gateway events
 
 ### Docs
-- update for v0.1.10dev7
+- update for v0.1.10dev8
 
 See full history in CHANGELOG.md.
 <!-- latest-release-notes:end -->
