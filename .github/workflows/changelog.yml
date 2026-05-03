@@ -48,10 +48,26 @@ jobs:
             python tools/update_changelog.py --version "$VERSION"
           fi
 
+      - name: Switch to default branch for commit
+        if: github.ref_type == 'tag'
+        run: |
+          DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
+          git fetch origin "$DEFAULT_BRANCH"
+          git checkout "$DEFAULT_BRANCH"
+          git pull --ff-only origin "$DEFAULT_BRANCH"
+
+          # Re-run generation on branch tip to avoid committing on detached tag state.
+          if [ -n "${{ github.event.inputs.since_tag }}" ]; then
+            python tools/update_changelog.py --version "$VERSION" --since-tag "${{ github.event.inputs.since_tag }}"
+          else
+            python tools/update_changelog.py --version "$VERSION"
+          fi
+
       - name: Commit changelog
         run: |
+          DEFAULT_BRANCH="${{ github.event.repository.default_branch }}"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add CHANGELOG.md README.md
           git commit -m "docs(changelog): update for v$VERSION" || echo "No changes"
-          git push
+          git push origin "HEAD:$DEFAULT_BRANCH"
