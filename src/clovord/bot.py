@@ -86,5 +86,5 @@ class Bot:
         await self.http.close()
         self._is_running = False
 
-    async def _handle_gateway_event(self, event_name: str, data: Any) -> None:
-        await dispatch_gateway_event(self, event_name, data)
+    async def _handle_gateway_event(self, event_name: str, data_full: Any, data_part: Any) -> None:
+        await dispatch_gateway_event(self, event_name, data_full, data_part)

@@ -12,9 +12,11 @@ if TYPE_CHECKING:
 _logger = get_logger()
 
 
-async def dispatch_gateway_event(bot: Bot, event_name: str, data: Any) -> None:
+async def dispatch_gateway_event(bot: Bot, event_name: str, data_full: Any, data_part: Any) -> None:
     module_name = event_name.lower()
     target = f"clovord.gateway.events.{module_name}"
+
+    
 
     try:
         module = import_module(target)
@@ -22,11 +24,11 @@ async def dispatch_gateway_event(bot: Bot, event_name: str, data: Any) -> None:
         # Fallback only when the event module itself does not exist.
         if exc.name != target:
             raise
-        await bot.events.dispatch(f"on_{module_name}", data)
+        await bot.events.dispatch(f"on_{module_name}", data_full, data_part)
         return
 
     handler = getattr(module, "handle", None)
     if handler is None:
         return
 
-    await handler(bot, data)
+    await handler(bot, data_full, data_part)

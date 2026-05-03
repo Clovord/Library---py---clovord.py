@@ -1,11 +1,14 @@
 name: Changelog
 
 on:
+  push:
+    tags:
+      - "v*"
   workflow_dispatch:
     inputs:
       version:
-        description: "Release version, e.g. 0.1.5"
-        required: true
+        description: "Release version, e.g. 0.1.5 (optional for tag-triggered runs)"
+        required: false
       since_tag:
         description: "Optional tag to start from, e.g. v0.1.4"
         required: false
@@ -27,10 +30,22 @@ jobs:
 
       - name: Update changelog
         run: |
+          VERSION="${{ github.event.inputs.version }}"
+          if [ -z "$VERSION" ]; then
+            VERSION="${GITHUB_REF_NAME#v}"
+          fi
+
+          if [ -z "$VERSION" ]; then
+            echo "Version could not be resolved. Provide workflow input 'version' or run on a v* tag."
+            exit 1
+          fi
+
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
           if [ -n "${{ github.event.inputs.since_tag }}" ]; then
-            python tools/update_changelog.py --version "${{ github.event.inputs.version }}" --since-tag "${{ github.event.inputs.since_tag }}"
+            python tools/update_changelog.py --version "$VERSION" --since-tag "${{ github.event.inputs.since_tag }}"
           else
-            python tools/update_changelog.py --version "${{ github.event.inputs.version }}"
+            python tools/update_changelog.py --version "$VERSION"
           fi
 
       - name: Commit changelog
@@ -38,5 +53,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add CHANGELOG.md README.md
-          git commit -m "docs(changelog): update for v${{ github.event.inputs.version }}" || echo "No changes"
+          git commit -m "docs(changelog): update for v$VERSION" || echo "No changes"
           git push

@@ -50,10 +50,13 @@ bot.run("YourBotToken")
 <!-- latest-release-notes:start -->
 ## Latest Release Notes
 Version: `0.1.10dev2`
-Last commit: `feat: update version to 0.1.10dev1 and add gateway error handling`
+Last commit: `feat: Added presence_update event handling`
 
 ### Added
-- update version to 0.1.10dev1 and add gateway error handling
+- Added presence_update event handling
+
+### Fixed
+- use constant for internal event name in message_create handler feat: add presence_update event
 
 See full history in CHANGELOG.md.
 <!-- latest-release-notes:end -->

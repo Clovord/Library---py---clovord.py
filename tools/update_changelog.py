@@ -71,6 +71,15 @@ def commits_since(tag: str | None) -> list[str]:
     return [line.strip() for line in output.splitlines() if line.strip()]
 
 
+def latest_commit_subject() -> str | None:
+    try:
+        output = run_git(["log", "-1", "--pretty=%s", "HEAD"])
+    except subprocess.CalledProcessError:
+        return None
+    subject = output.strip()
+    return subject if subject else None
+
+
 def categorize(commits: list[str]) -> dict[str, list[str]]:
     categorized: dict[str, list[str]] = {section: [] for section in SECTIONS}
     categorized["Other"] = []
@@ -172,8 +181,13 @@ def main() -> int:
     tag = args.since_tag if args.since_tag is not None else default_since_tag()
     commits = commits_since(tag)
     if not commits:
-        print("No commits found to add to changelog.")
-        return 0
+        fallback = latest_commit_subject()
+        if fallback:
+            commits = [fallback]
+            print("No commits found in selected range, using latest HEAD commit as fallback.")
+        else:
+            print("No commits found to add to changelog.")
+            return 0
 
     categorized = categorize(commits)
     entry = build_entry(args.version, categorized)

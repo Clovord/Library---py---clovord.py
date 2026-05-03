@@ -130,14 +130,15 @@ class GatewayClient:
     async def _handle_payload(self, payload: dict[str, Any]) -> None:
         op = payload.get("op")
         event_name = payload.get("t")
-        data = payload.get("d")
+        data_part = payload.get("d")
+        data_full = payload
         seq = payload.get("s")
 
         if isinstance(seq, int):
             self._seq = seq
 
         if op == GATEWAY_OP_HELLO:
-            await self._handle_hello(data)
+            await self._handle_hello(data_part)
             return
 
         if op == GATEWAY_OP_HEARTBEAT:
@@ -148,10 +149,10 @@ class GatewayClient:
             return
 
         if op == GATEWAY_OP_DISPATCH and isinstance(event_name, str):
-            if "ERROR" in event_name or self._looks_like_gateway_error_payload(data):
+            if "ERROR" in event_name or self._looks_like_gateway_error_payload(data_part):
                 raise self._build_gateway_error_from_payload(payload)
 
-            await self._bot._handle_gateway_event(event_name, data)
+            await self._bot._handle_gateway_event(event_name, data_full, data_part)
             return
 
     async def _handle_hello(self, data: Any) -> None:
