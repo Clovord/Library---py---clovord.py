@@ -11,7 +11,7 @@ def get_logger() -> logging.Logger:
         return logger
 
     handler = logging.StreamHandler()
-    handler.setFormatter(logging.Formatter("[CLOVORD] %(message)s"))
+    handler.setFormatter(logging.Formatter("[CLOVORD] %(asctime)s %(message)s", datefmt="%Y-%m-%d %H:%M:%S"))
 
     logger.addHandler(handler)
     logger.setLevel(logging.INFO)

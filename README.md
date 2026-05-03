@@ -46,3 +46,14 @@ bot.run("YourBotToken")
 - `Bot` is the main entrypoint.
 - The Gateway connection is handled internally with heartbeat and reconnect support.
 - The REST client is asynchronous and available through `bot.http`.
+
+<!-- latest-release-notes:start -->
+## Latest Release Notes
+Version: `0.1.10dev2`
+Last commit: `feat: update version to 0.1.10dev1 and add gateway error handling`
+
+### Added
+- update version to 0.1.10dev1 and add gateway error handling
+
+See full history in CHANGELOG.md.
+<!-- latest-release-notes:end -->

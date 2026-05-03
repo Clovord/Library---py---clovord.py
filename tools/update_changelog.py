@@ -18,6 +18,9 @@ SECTIONS = {
 
 CONVENTIONAL_RE = re.compile(r"^(?P<type>[a-z]+)(\([^)]+\))?(!)?:\s*(?P<desc>.+)$", re.IGNORECASE)
 
+README_MARKER_START = "<!-- latest-release-notes:start -->"
+README_MARKER_END = "<!-- latest-release-notes:end -->"
+
 
 def run_git(args: list[str]) -> str:
     result = subprocess.run(["git", *args], check=True, text=True, capture_output=True)
@@ -30,6 +33,33 @@ def latest_tag() -> str | None:
     except subprocess.CalledProcessError:
         return None
     return tags[0] if tags else None
+
+
+def default_since_tag() -> str | None:
+    """
+    Pick a sensible baseline tag for changelog generation.
+
+    If HEAD is already tagged (e.g. release tag was created before running
+    this workflow), using the latest tag would produce an empty range.
+    In that case, use the newest tag that is not pointing at HEAD.
+    """
+    try:
+        tags = run_git(["tag", "--sort=-v:refname"]).splitlines()
+    except subprocess.CalledProcessError:
+        return None
+    if not tags:
+        return None
+
+    try:
+        head_tags = set(run_git(["tag", "--points-at", "HEAD"]).splitlines())
+    except subprocess.CalledProcessError:
+        head_tags = set()
+
+    for tag in tags:
+        if tag and tag not in head_tags:
+            return tag
+
+    return tags[0]
 
 
 def commits_since(tag: str | None) -> list[str]:
@@ -83,6 +113,53 @@ def build_entry(version: str, categorized: dict[str, list[str]]) -> str:
     return "\n".join(lines).rstrip() + "\n\n"
 
 
+def build_readme_release_notes(version: str, commits: list[str], categorized: dict[str, list[str]]) -> str:
+    latest_commit = commits[0] if commits else "n/a"
+    lines = [
+        "## Latest Release Notes",
+        f"Version: `{version}`",
+        f"Last commit: `{latest_commit}`",
+        "",
+    ]
+
+    for section in ("Added", "Fixed", "Changed", "Docs", "Tests", "Other"):
+        items = categorized.get(section)
+        if not items:
+            continue
+        lines.append(f"### {section}")
+        for item in items[:5]:
+            lines.append(f"- {item}")
+        lines.append("")
+
+    lines.append("See full history in CHANGELOG.md.")
+
+    body = "\n".join(lines).rstrip()
+    return f"{README_MARKER_START}\n{body}\n{README_MARKER_END}\n"
+
+
+def update_readme(version: str, commits: list[str], categorized: dict[str, list[str]]) -> None:
+    readme = Path("README.md")
+    if readme.exists():
+        existing = readme.read_text(encoding="utf-8")
+    else:
+        existing = "# clovord\n\n"
+
+    release_block = build_readme_release_notes(version, commits, categorized)
+    pattern = re.compile(
+        rf"{re.escape(README_MARKER_START)}.*?{re.escape(README_MARKER_END)}\n?",
+        flags=re.DOTALL,
+    )
+
+    # Remove all old blocks first, then inject exactly one current block.
+    cleaned = pattern.sub("", existing).rstrip()
+    if cleaned:
+        new_content = cleaned + "\n\n" + release_block
+    else:
+        new_content = release_block
+
+    readme.write_text(new_content, encoding="utf-8")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description="Update CHANGELOG.md from conventional commit messages.")
     parser.add_argument("--version", required=True, help="Release version, e.g. 0.1.5")
@@ -92,7 +169,7 @@ def main() -> int:
     changelog = Path("CHANGELOG.md")
     existing = changelog.read_text(encoding="utf-8") if changelog.exists() else HEADER
 
-    tag = args.since_tag if args.since_tag is not None else latest_tag()
+    tag = args.since_tag if args.since_tag is not None else default_since_tag()
     commits = commits_since(tag)
     if not commits:
         print("No commits found to add to changelog.")
@@ -100,6 +177,8 @@ def main() -> int:
 
     categorized = categorize(commits)
     entry = build_entry(args.version, categorized)
+
+    update_readme(args.version, commits, categorized)
 
     version_header = f"## [{args.version}]"
     if version_header in existing:
@@ -116,7 +195,7 @@ def main() -> int:
         new_content = HEADER + entry + existing
 
     changelog.write_text(new_content, encoding="utf-8")
-    print(f"Updated CHANGELOG.md for version {args.version}")
+    print(f"Updated CHANGELOG.md and README.md for version {args.version}")
     return 0
 
 

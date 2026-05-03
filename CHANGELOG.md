@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.1.10dev2] - 2026-05-03
+### Added
+- update version to 0.1.10dev1 and add gateway error handling
+
 ## [0.1.3] - 2026-04-30
 ### Added
 - Intents helper API with flag-style configuration.
