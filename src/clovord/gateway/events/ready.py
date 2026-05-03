@@ -5,6 +5,8 @@ from typing import TYPE_CHECKING, Any
 if TYPE_CHECKING:
     from ...bot import Bot
 
+GATEWAY_EVENT_NAME = "READY"
+INTERNAL_EVENT_NAME = "on_ready"
 
 async def handle(bot: Bot, data: Any) -> None:
     username, user_id = _extract_ready_identity(data)
@@ -15,8 +17,7 @@ async def handle(bot: Bot, data: Any) -> None:
     except Exception as exc:
         bot._logger.warning("Failed to set online presence: %s", exc)
 
-    await bot.events.dispatch("on_ready")
-    await bot.events.dispatch("on_ready_payload", data)
+    await bot.events.dispatch(INTERNAL_EVENT_NAME)
 
 
 def _extract_ready_identity(data: Any) -> tuple[str, str]:
