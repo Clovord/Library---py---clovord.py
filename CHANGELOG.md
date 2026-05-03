@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.1.10dev7] - 2026-05-03
+### Fixed
+- update version to 0.1.10dev7 and improve presence update handling
+
+### Docs
+- update for v0.1.10dev6
+
 ## [0.1.10dev6] - 2026-05-03
 ### Added
 - add support for switching to default branch before committing changelog updates

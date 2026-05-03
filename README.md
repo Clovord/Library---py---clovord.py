@@ -49,14 +49,14 @@ bot.run("YourBotToken")
 
 <!-- latest-release-notes:start -->
 ## Latest Release Notes
-Version: `0.1.10dev6`
-Last commit: `fix: Fixed an issue with the Changelog generation from github`
-
-### Added
-- add support for switching to default branch before committing changelog updates
+Version: `0.1.10dev7`
+Last commit: `fix: update version to 0.1.10dev7 and improve presence update handling`
 
 ### Fixed
-- Fixed an issue with the Changelog generation from github
+- update version to 0.1.10dev7 and improve presence update handling
+
+### Docs
+- update for v0.1.10dev6
 
 See full history in CHANGELOG.md.
 <!-- latest-release-notes:end -->
