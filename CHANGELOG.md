@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.1.38] - 2026-10-17
+
+### Added
+- `Message.add_reaction` and `Message.remove_reaction` for the user reaction routes.
+- Gateway handlers for `MESSAGE_REACTION_ADD`, `MESSAGE_REACTION_REMOVE`, `MESSAGE_REACTION_REMOVE_EMOJI`, and `MESSAGE_REACTION_REMOVE_ALL`.
+
 ## [0.1.37] - 2026-10-17
 
 ### Added

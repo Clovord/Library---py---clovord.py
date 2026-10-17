@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import datetime
 from typing import Any
+from urllib.parse import quote
 
 from ..utils.payload import unwrap_payload
 from ._helpers import optional_str, parse_timestamp, snowflake_str
@@ -101,3 +102,17 @@ class Message:
         """Delete this message."""
         bot = self._require_bot()
         await bot.http.delete(f"/channels/{self.channel_id}/messages/{self.id}")
+
+    def _reaction_path(self, emoji: str) -> str:
+        token = quote(str(emoji), safe="")
+        return f"/channels/{self.channel_id}/messages/{self.id}/reactions/{token}/@me"
+
+    async def add_reaction(self, emoji: str) -> dict[str, Any]:
+        """PUT the current user's reaction. Bot tokens are rejected by the API today."""
+        bot = self._require_bot()
+        return await bot.http.put(self._reaction_path(emoji))
+
+    async def remove_reaction(self, emoji: str) -> dict[str, Any]:
+        """DELETE the current user's reaction. Bot tokens are rejected by the API today."""
+        bot = self._require_bot()
+        return await bot.http.delete(self._reaction_path(emoji))
