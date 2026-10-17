@@ -18,6 +18,7 @@ class Role:
     permissions: int = 0
     managed: bool = False
     mentionable: bool = False
+    separator: bool = False
     raw: dict[str, Any] = field(default_factory=dict, repr=False)
     _bot: Any = field(repr=False, default=None)
 
@@ -40,6 +41,7 @@ class Role:
             permissions=permissions,
             managed=optional_bool(data.get("managed")),
             mentionable=optional_bool(data.get("mentionable")),
+            separator=optional_bool(data.get("separator")),
             raw=dict(data),
             _bot=bot,
         )
@@ -63,6 +65,7 @@ class Role:
         mentionable: bool | None = None,
         permissions: int | str | None = None,
         position: int | None = None,
+        separator: bool | None = None,
         **extra: Any,
     ) -> Role:
         bot = self._require_bot()
@@ -80,6 +83,8 @@ class Role:
             body["permissions"] = str(permissions)
         if position is not None:
             body["position"] = int(position)
+        if separator is not None:
+            body["separator"] = bool(separator)
         if extra:
             body.update(extra)
         if not body:

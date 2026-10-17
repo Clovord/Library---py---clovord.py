@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.1.37] - 2026-10-17
+
+### Added
+- `Role.separator` for heading roles that group the role list and cannot be assigned.
+
 ## [0.1.36] - 2026-09-06
 
 ### Changed
