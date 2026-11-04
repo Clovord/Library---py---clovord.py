@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.1.39] - 2026-11-04
+
+### Added
+- Gateway handler `on_activity_join` for `ACTIVITY_JOIN`.
+- Presence updates keep an `activities` list when the gateway sends one.
+
 ## [0.1.38] - 2026-10-17
 
 ### Added

@@ -40,6 +40,7 @@ def _build_presence_states(data: dict[str, Any]) -> tuple[dict[str, Any], dict[s
             after = {
                 "status": presence_data.get("status"),
                 "custom_status": presence_data.get("custom_status"),
+                "activities": presence_data.get("activities") or [],
             }
 
     if "user" not in before:
