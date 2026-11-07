@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.1.40] - 2026-11-07
+
+### Added
+- `RichPresence` talks to the desktop app pipe so a registered application can set the signed-in user's activity.
+
 ## [0.1.39] - 2026-11-04
 
 ### Added

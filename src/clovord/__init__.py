@@ -31,6 +31,7 @@ from .ui import (
     TextDisplay,
     Thumbnail,
 )
+from .rich_presence import RichPresence, RichPresenceError
 from .utils.time import format_relative_timestamp, format_timestamp, format_uptime
 from .webhook import Webhook
 
@@ -64,6 +65,8 @@ __all__ = [
     "StringSelect",
     "TextDisplay",
     "Thumbnail",
+    "RichPresence",
+    "RichPresenceError",
     "format_uptime",
     "format_timestamp",
     "format_relative_timestamp",
