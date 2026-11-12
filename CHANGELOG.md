@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.1.41] - 2026-11-11
+
+### Added
+- Prefix commands via `command_prefix` and `@bot.command` with `Context`
+
+### Changed
+- `Channel.send` accepts UI Kit objects in `components=` and no longer takes `embeds=`
+
 ## [0.1.40] - 2026-11-07
 
 ### Added

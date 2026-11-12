@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import TYPE_CHECKING, Any
 
+from ..ui.components import serialize_components
 from ..utils.payload import unwrap_payload
 from ._helpers import optional_str, snowflake_str
 
@@ -76,9 +77,8 @@ class Channel:
         self,
         content: str = "",
         *,
-        embeds: list[dict[str, Any]] | None = None,
-        components: list[dict[str, Any]] | None = None,
-        container: dict[str, Any] | None = None,
+        components: list[Any] | None = None,
+        container: Any | None = None,
         attachments: list[dict[str, Any]] | None = None,
         reply_to: str | None = None,
         message_reference: dict[str, Any] | None = None,
@@ -89,12 +89,10 @@ class Channel:
 
         bot = self._require_bot()
         payload: dict[str, Any] = {"content": content}
-        if embeds is not None:
-            payload["embeds"] = embeds
         if components is not None:
-            payload["components"] = components
+            payload["components"] = serialize_components(components)
         elif container is not None:
-            payload["components"] = [container]
+            payload["components"] = serialize_components([container])
         if attachments is not None:
             payload["attachments"] = attachments
         if message_reference is not None:

@@ -19,20 +19,34 @@ pip install -e .[dev]
 ```python
 import clovord
 import os
-from clovord import Bot
-import json
-
+from clovord import Bot, Container, TextDisplay
 
 intents = clovord.Intents.default()
 intents.members = True
 intents.messages = True
 intents.presence = True
 
-bot = Bot(intents=intents)
+bot = Bot(command_prefix="!", intents=intents)
 
 @bot.event
 async def on_ready():
-    print("READY EVENT FIRED")
+    print(f"Logged in as {bot.user.username}")
+
+@bot.command(name="help")
+async def help_command(ctx):
+    await ctx.send(
+        components=[
+            Container(
+                TextDisplay("**Help**"),
+                TextDisplay("Use `!ping` or `/ping`."),
+                accent_color=0x3FE0C5,
+            )
+        ]
+    )
+
+@bot.command()
+async def ping(ctx):
+    await ctx.send(f"pong · {round(bot.latency * 1000)} ms")
 
 bot.run(os.environ["BOT_TOKEN"])
 ```
@@ -40,6 +54,9 @@ bot.run(os.environ["BOT_TOKEN"])
 ## Overview
 
 - `Bot` is the main entrypoint.
+- Prefix commands use `command_prefix` and `@bot.command`.
+- Slash commands use `bot.tree` and `@bot.tree.command`.
+- Rich layouts use Containers (`Container`, `TextDisplay`, …) via `components=`.
 - The Gateway connection is handled internally with heartbeat and reconnect support.
 - The REST client is asynchronous and available through `bot.http`.
 
@@ -48,53 +65,49 @@ bot.run(os.environ["BOT_TOKEN"])
 `clovord.py` supports extension modules via `setup(bot)`.
 
 ```python
-# handlers/message_create.py
-def setup(bot):
-    @bot.event
-    async def on_message_create(message):
-        if bot.user and message.author.id == bot.user.id:
-            return
+from clovord import Container, TextDisplay
 
-        if message.content.startswith("!"):
-            await message.channel.send(
-                "Hello from extension",
-                embeds=[{"title": "Welcome", "description": "Embed support"}],
-                container={"type": "card", "accent": "brand"},
-            )
+def setup(bot):
+    @bot.command(name="hello")
+    async def hello(ctx):
+        await ctx.send(
+            components=[
+                Container(
+                    TextDisplay("Hello from an extension"),
+                    accent_color=0x3FE0C5,
+                )
+            ]
+        )
 ```
 
 ```python
 from pathlib import Path
 from clovord import Bot
 
-bot = Bot()
+bot = Bot(command_prefix="!")
 
-# Load one importable module
 bot.load_extension("mybot.handlers.message_create")
 
-# Load multiple modules
 bot.load_extensions(
     "mybot.handlers.message_create",
     "mybot.handlers.ready",
 )
 
-# Load all modules from a package (and subpackages)
 bot.load_extensions_from_package("mybot.handlers")
 
-# Load all modules from a folder path (and subfolders)
 bot.load_extensions_from_path(Path(__file__).parent / "handlers")
 ```
 
 <!-- latest-release-notes:start -->
 ## Latest Release Notes
-Version: `0.1.13`
-Last commit: fix: update version to 0.1.13 in pyproject.toml
+Version: `0.1.41`
+Last commit: docs and prefix commands
 
-### Fixed
-- update version to 0.1.13 in pyproject.toml
+### Added
+- Prefix commands via `command_prefix` and `@bot.command`
 
-### Docs
-- update for v0.1.13dev4
+### Changed
+- `Channel.send` accepts UI Kit objects in `components=` and no longer takes `embeds=`
 
 See full history in CHANGELOG.md.
 <!-- latest-release-notes:end -->

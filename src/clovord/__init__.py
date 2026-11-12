@@ -17,6 +17,7 @@ from .models import (
     Typing,
     User,
 )
+from .prefix_commands import Context, PrefixCommand
 from .ui import (
     ActionRow,
     Button,
@@ -38,6 +39,8 @@ from .webhook import Webhook
 __all__ = [
     "Bot",
     "CommandTree",
+    "Context",
+    "PrefixCommand",
     "Interaction",
     "InteractionFollowup",
     "InteractionResponse",

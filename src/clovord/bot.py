@@ -17,7 +17,16 @@ from .commands import CommandTree
 from .models.channel import Channel
 from .models.domainlist import DomainlistEntry
 from .models.guild import Guild
+from .models.message import Message
 from .models.user import User
+from .prefix_commands import (
+    Context,
+    PrefixCommand,
+    PrefixCommandMap,
+    match_prefix,
+    normalize_prefixes,
+    parse_invocation,
+)
 from .utils.payload import unwrap_payload
 from .gateway.events.dispatcher import dispatch_gateway_event
 from .gateway.handler import GatewayClient
@@ -35,6 +44,7 @@ class Bot:
     def __init__(
         self,
         *,
+        command_prefix: str | list[str] | tuple[str, ...] | None = None,
         intents: Intents | int | None = None,
         auto_online_presence: bool = True,
         autoupdate: bool = False,
@@ -44,6 +54,8 @@ class Bot:
         self.http = HTTPClient()
         self.gateway = GatewayClient(self)
         self.tree = CommandTree(self)
+        self._prefix_commands = PrefixCommandMap()
+        self.command_prefix = command_prefix
         self._logger = get_logger()
         self._run_task: asyncio.Task[None] | None = None
         self._auto_online_presence = auto_online_presence
@@ -61,6 +73,15 @@ class Bot:
         self._guild_ids: tuple[str, ...] = ()
         self._guilds: dict[str, Guild] = {}
         self.set_intents(Intents.none() if intents is None else intents)
+
+    @property
+    def command_prefix(self) -> str | list[str] | tuple[str, ...] | None:
+        return self._command_prefix_raw
+
+    @command_prefix.setter
+    def command_prefix(self, value: str | list[str] | tuple[str, ...] | None) -> None:
+        self._command_prefix_raw = value
+        self._command_prefixes = normalize_prefixes(value)
 
     @property
     def intents(self) -> Intents:
@@ -87,6 +108,71 @@ class Bot:
 
         self.events.register(callback.__name__, callback)
         return callback
+
+    def command(
+        self,
+        name: str | None = None,
+        *,
+        aliases: list[str] | tuple[str, ...] = (),
+    ) -> Callable[[Callable[..., Awaitable[Any]]], Callable[..., Awaitable[Any]]]:
+        def decorator(callback: Callable[..., Awaitable[Any]]) -> Callable[..., Awaitable[Any]]:
+            command_name = name if name is not None else callback.__name__
+            self._prefix_commands.add(
+                PrefixCommand(callback, name=str(command_name), aliases=aliases)
+            )
+            return callback
+
+        return decorator
+
+    async def process_commands(self, message: Message) -> bool:
+        if not self._command_prefixes:
+            return False
+        if self._user is not None and message.author.id == self._user.id:
+            return False
+
+        content = str(message.content or "")
+        if not content:
+            return False
+
+        prefix = match_prefix(content, self._command_prefixes)
+        if prefix is None:
+            return False
+
+        parsed = parse_invocation(content, prefix)
+        if parsed is None:
+            return False
+
+        invoked_with, args = parsed
+        command = self._prefix_commands.get(invoked_with)
+        if command is None:
+            return False
+
+        ctx = Context(
+            bot=self,
+            message=message,
+            prefix=prefix,
+            command=command,
+            invoked_with=invoked_with,
+            args=list(args),
+        )
+        try:
+            await command.callback(ctx)
+        except Exception as exc:
+            self._logger.exception("Prefix command failed for %s: %s", command.name, exc)
+            if self.events.error_policy == "raise":
+                raise
+            if self.events.error_policy == "dispatch":
+                on_error = self.events.get("on_error")
+                if on_error is not None:
+                    try:
+                        await on_error("on_prefix_command", exc, (ctx,), {})
+                    except Exception as on_error_exc:
+                        self._logger.exception(
+                            "on_error handler failed for prefix command %s: %s",
+                            command.name,
+                            on_error_exc,
+                        )
+        return True
 
     @property
     def loaded_extensions(self) -> tuple[str, ...]:
