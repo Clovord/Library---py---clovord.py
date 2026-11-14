@@ -41,6 +41,7 @@ class Message:
     guild_id: str | None = None
     timestamp: datetime | None = None
     edited_timestamp: datetime | None = None
+    pinned: bool = False
     raw: dict[str, Any] = field(default_factory=dict, repr=False)
 
     @classmethod
@@ -62,6 +63,7 @@ class Message:
             guild_id=guild_id,
             timestamp=parse_timestamp(payload.get("timestamp") or payload.get("created_at")),
             edited_timestamp=parse_timestamp(payload.get("edited_timestamp")),
+            pinned=bool(payload.get("pinned")),
             raw=dict(payload),
         )
 
@@ -116,3 +118,19 @@ class Message:
         """DELETE the current user's reaction. Bot tokens are rejected by the API today."""
         bot = self._require_bot()
         return await bot.http.delete(self._reaction_path(emoji))
+
+    async def pin(self) -> Message:
+        bot = self._require_bot()
+        response = await bot.http.put(f"/channels/{self.channel_id}/pins/{self.id}")
+        payload = unwrap_payload(response)
+        if not isinstance(payload, dict):
+            raise TypeError("Message.pin returned a non-object payload")
+        return Message.from_dict(payload, bot=bot)
+
+    async def unpin(self) -> Message:
+        bot = self._require_bot()
+        response = await bot.http.delete(f"/channels/{self.channel_id}/pins/{self.id}")
+        payload = unwrap_payload(response)
+        if not isinstance(payload, dict):
+            raise TypeError("Message.unpin returned a non-object payload")
+        return Message.from_dict(payload, bot=bot)

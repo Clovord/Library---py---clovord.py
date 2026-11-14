@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.1.42] - 2026-11-14
+
+### Added
+- `Message.pin`, `Message.unpin`, and `Channel.pins` for channel pins
+
 ## [0.1.41] - 2026-11-11
 
 ### Added

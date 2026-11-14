@@ -100,14 +100,11 @@ bot.load_extensions_from_path(Path(__file__).parent / "handlers")
 
 <!-- latest-release-notes:start -->
 ## Latest Release Notes
-Version: `0.1.41`
-Last commit: docs and prefix commands
+Version: `0.1.42`
+Last commit: channel message pins
 
 ### Added
-- Prefix commands via `command_prefix` and `@bot.command`
-
-### Changed
-- `Channel.send` accepts UI Kit objects in `components=` and no longer takes `embeds=`
+- `Message.pin`, `Message.unpin`, and `Channel.pins`
 
 See full history in CHANGELOG.md.
 <!-- latest-release-notes:end -->

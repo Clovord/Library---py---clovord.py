@@ -110,6 +110,19 @@ class Channel:
             raise TypeError("Channel.send returned a non-object payload")
         return Message.from_dict(body, bot=bot)
 
+    async def pins(self) -> list[Message]:
+        from .message import Message
+
+        bot = self._require_bot()
+        response = await bot.http.get(f"/channels/{self.id}/pins")
+        payload = unwrap_payload(response)
+        rows: list[Any] = []
+        if isinstance(payload, dict) and isinstance(payload.get("messages"), list):
+            rows = payload["messages"]
+        elif isinstance(payload, list):
+            rows = payload
+        return [Message.from_dict(row, bot=bot) for row in rows if isinstance(row, dict)]
+
     async def trigger_typing(self) -> Any:
         """Post a typing indicator to this channel."""
         bot = self._require_bot()
