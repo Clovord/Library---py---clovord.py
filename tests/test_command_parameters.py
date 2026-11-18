@@ -88,7 +88,7 @@ async def test_command_dispatch_passes_bound_options() -> None:
     class _FakeResponse:
         is_done = False
 
-        def __init__(self, interaction: "_FakeInteraction") -> None:
+        def __init__(self, interaction: _FakeInteraction) -> None:
             self._interaction = interaction
 
         async def defer(self, **kwargs: object) -> None:
