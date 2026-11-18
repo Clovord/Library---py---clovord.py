@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.1.44] - 2026-11-18
+
+### Added
+- Gateway handler `on_application_authorized` for `APPLICATION_AUTHORIZED`
+
 ## [0.1.43] - 2026-11-18
 
 ### Fixed

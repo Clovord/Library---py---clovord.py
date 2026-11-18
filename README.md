@@ -100,11 +100,11 @@ bot.load_extensions_from_path(Path(__file__).parent / "handlers")
 
 <!-- latest-release-notes:start -->
 ## Latest Release Notes
-Version: `0.1.42`
-Last commit: channel message pins
+Version: `0.1.44`
+Last commit: APPLICATION_AUTHORIZED gateway event
 
 ### Added
-- `Message.pin`, `Message.unpin`, and `Channel.pins`
+- Gateway handler `on_application_authorized` for `APPLICATION_AUTHORIZED`
 
 See full history in CHANGELOG.md.
 <!-- latest-release-notes:end -->
