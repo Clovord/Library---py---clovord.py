@@ -100,11 +100,11 @@ bot.load_extensions_from_path(Path(__file__).parent / "handlers")
 
 <!-- latest-release-notes:start -->
 ## Latest Release Notes
-Version: `0.1.44`
-Last commit: APPLICATION_AUTHORIZED gateway event
+Version: `0.1.45`
+Last commit: Drop the raw fallback for unknown gateway events
 
-### Added
-- Gateway handler `on_application_authorized` for `APPLICATION_AUTHORIZED`
+### Changed
+- Unknown gateway events stay quiet when no event module exists, instead of firing a raw fallback listener.
 
 See full history in CHANGELOG.md.
 <!-- latest-release-notes:end -->

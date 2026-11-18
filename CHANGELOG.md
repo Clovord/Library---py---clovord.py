@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.1.45] - 2026-11-18
+
+### Changed
+- Unknown gateway events stay quiet when no event module exists, instead of firing a raw fallback listener.
+
 ## [0.1.44] - 2026-11-18
 
 ### Added

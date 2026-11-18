@@ -25,10 +25,8 @@ async def dispatch_gateway_event(bot: Bot, event_name: str, data_full: Any, data
     try:
         module = import_module(target)
     except ModuleNotFoundError as exc:
-        # Fallback only when the event module itself does not exist.
         if exc.name != target:
             raise
-        await bot.events.dispatch(f"on_{module_name}", data_full, data_part)
         return
 
     handler = getattr(module, "handle", None)
