@@ -36,9 +36,13 @@ class InteractionResponse:
         ephemeral: bool = False,
         flags: int | None = None,
     ) -> Any:
-        """Respond with a channel message (interaction callback type 4)."""
+        """Respond with a channel message (interaction callback type 4).
+
+        If the interaction was already deferred (including the tree auto-defer),
+        this edits the original deferred response instead.
+        """
         interaction = self._interaction
-        if interaction._responded:
+        if interaction._responded and not interaction._deferred:
             raise RuntimeError("Interaction has already been responded to")
         if not interaction.id or not interaction.token:
             raise RuntimeError("Interaction is missing id/token")
@@ -53,6 +57,14 @@ class InteractionResponse:
             resolved_flags |= EPHEMERAL
         if serialized and has_layout_components(serialized):
             resolved_flags |= IS_COMPONENTS_V2
+
+        if interaction._deferred:
+            return await interaction.followup.edit_original(
+                content=text if text else None,
+                components=components,
+                ephemeral=ephemeral,
+                flags=flags,
+            )
 
         data: dict[str, Any] = {"flags": resolved_flags}
         if text:
@@ -69,9 +81,14 @@ class InteractionResponse:
         return unwrap_payload(response)
 
     async def defer(self, *, ephemeral: bool = False) -> Any:
-        """Acknowledge with a deferred channel message (type 5)."""
+        """Acknowledge with a deferred channel message (type 5).
+
+        Idempotent when the interaction was already deferred (e.g. by CommandTree).
+        """
         interaction = self._interaction
         if interaction._responded:
+            if interaction._deferred:
+                return None
             raise RuntimeError("Interaction has already been responded to")
         if not interaction.id or not interaction.token:
             raise RuntimeError("Interaction is missing id/token")
@@ -286,7 +303,11 @@ class CommandTree:
         return payload
 
     async def dispatch(self, payload: dict[str, Any]) -> bool:
-        """Route an INTERACTION_CREATE payload to a registered command handler."""
+        """Route an INTERACTION_CREATE payload to a registered command handler.
+
+        Defers the interaction immediately so Clovord's 3s ack deadline is not
+        burned by handler setup or slow work before the first response.
+        """
         if not isinstance(payload, dict):
             return False
         if int(payload.get("type") or 0) != 2:
@@ -298,6 +319,9 @@ class CommandTree:
             return False
         interaction = Interaction(self._bot, payload)
         try:
+            # Ack first — any await after INTERACTION_CREATE races the API's
+            # 3-second interaction deadline (404053 / failed_code 400097).
+            await interaction.response.defer()
             missing = missing_required_parameters(data, handler)
             if missing:
                 raise ValueError(f"Missing required option(s): {', '.join(missing)}")

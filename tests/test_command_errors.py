@@ -25,6 +25,9 @@ async def test_command_dispatch_recovers_after_handler_failure_before_response()
     class _Response:
         is_done = False
 
+        async def defer(self, **kwargs):
+            self.is_done = True
+
         async def send_message(self, content: str = "", **kwargs):
             sent.append(content)
 
@@ -39,8 +42,15 @@ async def test_command_dispatch_recovers_after_handler_failure_before_response()
 
     def _fake_interaction(bot_obj, payload):
         interaction = original_interaction(bot_obj, payload)
-        interaction.response = _Response()
+        response = _Response()
+        interaction.response = response
         interaction.followup = _Followup()
+
+        async def _defer(**kwargs):
+            interaction._deferred = True
+            response.is_done = True
+
+        response.defer = _defer
         return interaction
 
     import clovord.commands as commands_module
@@ -60,7 +70,8 @@ async def test_command_dispatch_recovers_after_handler_failure_before_response()
         commands_module.Interaction = original_interaction
 
     assert handled is True
-    assert sent == ["Command failed: members intent missing"]
+    # Auto-defer means recovery edits the original deferred response.
+    assert sent == ["edit:Command failed: members intent missing"]
 
 
 @pytest.mark.asyncio

@@ -88,13 +88,22 @@ async def test_command_dispatch_passes_bound_options() -> None:
     class _FakeResponse:
         is_done = False
 
+        def __init__(self, interaction: _FakeInteraction) -> None:
+            self._interaction = interaction
+
+        async def defer(self, **kwargs: object) -> None:
+            self.is_done = True
+            self._interaction._deferred = True
+            received["deferred"] = True
+
         async def send_message(self, content: str, **kwargs: object) -> None:
             received["content"] = content
 
     class _FakeInteraction:
         def __init__(self) -> None:
-            self.response = _FakeResponse()
+            self.response = _FakeResponse(self)
             self._deferred = False
+            self._responded = False
 
     import clovord.commands as commands_module
 
@@ -114,5 +123,6 @@ async def test_command_dispatch_passes_bound_options() -> None:
         commands_module.Interaction = original_interaction
 
     assert handled is True
+    assert received["deferred"] is True
     assert received["domain"] == "evil.test"
     assert received["content"] == "evil.test"

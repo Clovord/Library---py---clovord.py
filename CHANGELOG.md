@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.1.43] - 2026-11-18
+
+### Fixed
+- Slash command dispatch now defers the interaction immediately so slow handler work cannot miss Clovord's 3s ack window (`404053` / `400097` interaction expired).
+- `interaction.response.defer()` is idempotent after an earlier defer.
+- `interaction.response.send_message()` after a defer edits the original deferred response instead of failing.
+
 ## [0.1.42] - 2026-11-14
 
 ### Added
