@@ -5,7 +5,7 @@ from datetime import datetime
 from typing import Any
 
 from ..utils.payload import unwrap_payload
-from ._helpers import optional_int, optional_str, parse_timestamp, snowflake_str
+from ._helpers import coerce_int, optional_int, optional_str, parse_timestamp, snowflake_str
 from .channel import Channel
 from .member import Member
 from .role import Role
@@ -129,7 +129,7 @@ class Guild:
         bot = self._require_bot()
         body = {
             "name": name,
-            "color": int(color),
+            "color": coerce_int(color),
             "hoist": bool(hoist),
             "mentionable": bool(mentionable),
             "permissions": str(permissions),

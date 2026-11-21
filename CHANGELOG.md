@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.1.46] - 2026-11-21
+
+### Fixed
+- Integer/color fields accept hex strings such as `0x0050FF` and `#0050FF` (Container `accent_color`, role colors).
+
 ## [0.1.45] - 2026-11-18
 
 ### Changed

@@ -3,6 +3,21 @@ from __future__ import annotations
 from typing import Any, Sequence
 
 
+def _coerce_int(value: Any) -> int:
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(value)
+    if isinstance(value, str):
+        text = value.strip().replace("_", "")
+        if text.startswith("#") and len(text) > 1:
+            text = "0x" + text[1:]
+        return int(text, 0)
+    return int(value)
+
+
 def _as_dict(value: Any) -> dict[str, Any]:
     if isinstance(value, dict):
         return value
@@ -152,7 +167,7 @@ class Container(Component):
     def __init__(
         self,
         *children: Any,
-        accent_color: int | None = None,
+        accent_color: int | str | None = None,
         spoiler: bool = False,
     ) -> None:
         self.children: list[Any] = list(children)
@@ -169,7 +184,7 @@ class Container(Component):
             "components": serialize_components(self.children),
         }
         if self.accent_color is not None:
-            payload["accent_color"] = int(self.accent_color)
+            payload["accent_color"] = _coerce_int(self.accent_color)
         if self.spoiler:
             payload["spoiler"] = True
         return payload

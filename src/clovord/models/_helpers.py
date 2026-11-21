@@ -21,10 +21,33 @@ def optional_str(value: Any) -> str | None:
 def optional_int(value: Any) -> int | None:
     if value is None:
         return None
+    if isinstance(value, bool):
+        return int(value)
+    if isinstance(value, int):
+        return value
+    if isinstance(value, float):
+        return int(value)
+    if isinstance(value, str):
+        text = value.strip().replace("_", "")
+        if not text:
+            return None
+        if text.startswith("#") and len(text) > 1:
+            text = "0x" + text[1:]
+        try:
+            return int(text, 0)
+        except ValueError:
+            return None
     try:
         return int(value)
     except (TypeError, ValueError):
         return None
+
+
+def coerce_int(value: Any) -> int:
+    parsed = optional_int(value)
+    if parsed is None:
+        raise ValueError(f"invalid integer value: {value!r}")
+    return parsed
 
 
 def optional_bool(value: Any, *, default: bool = False) -> bool:

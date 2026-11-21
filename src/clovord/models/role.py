@@ -4,7 +4,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from ..utils.payload import unwrap_payload
-from ._helpers import optional_bool, optional_int, optional_str, snowflake_str
+from ._helpers import coerce_int, optional_bool, optional_int, optional_str, snowflake_str
 
 
 @dataclass(slots=True)
@@ -74,7 +74,7 @@ class Role:
         if name is not None:
             body["name"] = name
         if color is not None:
-            body["color"] = int(color)
+            body["color"] = coerce_int(color)
         if hoist is not None:
             body["hoist"] = bool(hoist)
         if mentionable is not None:
