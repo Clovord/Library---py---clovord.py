@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 The format is based on Keep a Changelog, and this project follows Semantic Versioning.
 
+## [0.1.47] - 2026-11-21
+
+### Changed
+- `INTERACTION_CREATE` debug logging includes interaction type, `custom_id`, and command name so component selects are easier to confirm at the gateway layer.
+
 ## [0.1.46] - 2026-11-21
 
 ### Fixed
